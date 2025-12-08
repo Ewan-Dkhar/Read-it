@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "../styles/Product.css";
+import { useNavigate, useParams } from "react-router-dom";
 
 const Product = () => {
+  const { id } = useParams()
   const [relatedBooks, setRelatedBooks] = useState([
     {
       img: "https://i.pinimg.com/736x/eb/65/17/eb6517718b619d7fb1766c7ccd54376f.jpg",
@@ -35,6 +37,8 @@ const Product = () => {
     },
   ]);
 
+  const navigate = useNavigate()
+
   return (
     <>
       <div className="product-page">
@@ -63,7 +67,7 @@ const Product = () => {
             </p>
 
             <div className="buttons">
-              <button className="btn-solid">Buy now</button>
+              <button className="btn-solid" onClick={() => {navigate(`/checkout/${id}`)}}>Buy now</button>
               <button className="btn-outline">Add to Cart</button>
             </div>
           </div>
@@ -73,7 +77,7 @@ const Product = () => {
 
           <div className="related-grid">
             {relatedBooks.map((book, i) => (
-              <div className="card" key={i}>
+              <div className="card" key={i} onClick={() => {navigate(`/product/${i}`)}}>
                 <img src={book.img} alt={book.title} />
                 <h4 style={{ marginTop: "12px" }}>{book.title}</h4>
                 <p className="genre">{book.genre}</p>

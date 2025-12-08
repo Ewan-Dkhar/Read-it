@@ -12,6 +12,7 @@ import './styles/App.css'
 import Footer from './components/Footer'
 import AccountLayout from './layouts/AccountLayout'
 import MyOrders from './pages/MyOrders'
+import Checkout from './pages/Checkout'
 
 function App() {
 
@@ -24,12 +25,13 @@ function App() {
         <Route path='/about' element={<About />} />
         <Route path='/contact' element={<Contact />} />
         <Route path='/shop' element={<Shop />} />
-        <Route path='/product' element={<Product />} />
+        <Route path='/product/:id' element={<Product />} />
         <Route path='/categories' element={<Categories />} />
         <Route path='/account' element={<AccountLayout />}>
           <Route index element={<Profile />} />
           <Route path='orders' element={<MyOrders />} />
         </Route>
+        <Route path='/checkout/:id' element={<Checkout />}/>
       </Routes>
       <Footer />
     </div>
