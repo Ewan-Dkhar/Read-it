@@ -11,14 +11,11 @@ function Profile() {
         email: "Johndoe@gmail.com",
         pass: "****************"});
 
-    // function editprofile(){
-    //     alert("edit feature coming soon");
-    // }
-
+    
     const navigate = useNavigate()
 
     return (
-        <div className="main">
+        <div className="main-profile">
 
             <div className="pic">
                 <img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png" />
