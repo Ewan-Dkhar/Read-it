@@ -77,7 +77,7 @@ const Product = () => {
 
           <div className="related-grid">
             {relatedBooks.map((book, i) => (
-              <div className="card" key={i} onClick={() => {navigate(`/product/${i}`)}}>
+              <div className="product-card" key={i} onClick={() => {navigate(`/product/${i}`)}}>
                 <img src={book.img} alt={book.title} />
                 <h4 style={{ marginTop: "12px" }}>{book.title}</h4>
                 <p className="genre">{book.genre}</p>

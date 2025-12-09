@@ -73,11 +73,11 @@
     gap: 25px;
 }
 
-.card {
+.product-card {
     text-align: center;
 }
 
-.card img {
+.product-card img {
     width: 150px;
     display: block;
     margin: 0 auto;
