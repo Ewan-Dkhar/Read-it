@@ -1,0 +1,162 @@
+*{
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+font-family: Arial, Helvetica, sans-serif;
+}
+
+body, html {
+overflow-x: hidden;
+}
+
+.img1{
+width: 100%;
+height: 300px;
+border-radius: 10px;
+}
+
+.divider {
+height: 1px;
+background: #101010;
+width: 100%;
+margin-bottom: 30px;
+}
+
+.popular-books {
+padding: 20px 60px;
+margin-top: 40px;
+font-weight: 300px;
+}
+
+.header {
+font-size: 56px;
+font-weight: 500;
+text-align: center;
+margin-bottom: 40px;
+position: relative;
+display: inline-block;
+}
+
+.book-grid {
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+gap: 25px;
+display: flex;
+}
+
+.book-card {
+background: white;
+padding: 20px;
+border-radius: 12px;
+box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+transition: transform 0.2s ease, box-shadow 0.2s ease;
+text-align: center;
+}
+
+.book-card:hover {
+transform: translateY(-5px);
+box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+}
+
+.book-card img {
+width: 100%;
+height: 260px;
+object-fit: cover;
+border-radius: 10px;
+margin-bottom: 15px;
+}
+
+.book-card img{
+object-fit:fill;
+background: #090000;
+padding: 10px;
+}
+
+.book-card h3 {
+font-size: 20px;
+margin-bottom: 5px;
+}
+
+.book-card p {
+color: #777;
+margin-bottom: 15px;
+}
+
+.book-card button {
+padding: 8px 15px;
+border-radius: 20px;
+border: none;
+margin: 5px;
+cursor: pointer;
+background: black;
+color: white;
+}
+
+.book-card button.secondary {
+background: white;
+border: 1px solid black;
+color: black;
+}
+
+.book-card button:hover {
+opacity: 0.8;
+}
+
+.genre {
+color: #777;
+}
+
+.desc {
+margin: 6px 0;
+color: #555;
+}
+
+.price {
+font-weight: bold;
+margin-bottom: 10px;
+color: #090000;
+}
+
+
+
+.carousel {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 20px auto;
+  overflow: hidden;
+  border-radius: 10px;
+}
+
+.carousel-img {
+  width: 100%;
+  height: 500px;
+  object-fit: cover;
+  transition: 0.5s ease-in-out;
+  border-radius: 20px;
+}
+
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2rem;
+  background-color: rgba(0,0,0,0.5);
+  color: white;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 50%;
+}
+
+.arrow.left {
+  left: 10px;
+}
+
+.arrow.right {
+  right: 10px;
+}
+
+.arrow:hover {
+  background-color: rgba(0,0,0,0.8);
+}
