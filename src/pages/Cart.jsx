@@ -29,7 +29,7 @@ const initialCart = [
   },
 ];
 
-function MyCart() {
+function Cart() {
   const [cartItems, setCartItems] = useState(initialCart);
 
   const handleIncrease = (id) => {
@@ -134,4 +134,4 @@ function MyCart() {
   );
 }
 
-export default MyCart;
+export default Cart;
