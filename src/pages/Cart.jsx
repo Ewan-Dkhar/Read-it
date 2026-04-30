@@ -1,65 +1,68 @@
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import "../styles/Cart.css";
-
-const initialCart = [
-  {
-    id: 1,
-    title: "Rich Dad Poor Dad",
-    genre: "Finance",
-    price: 499,
-    image: "https://m.media-amazon.com/images/I/51AHZGhzZEL._SL500_.jpg",
-    quantity: 1,
-  },
-  {
-    id: 2,
-    title: "The Subtle Art of Not Giving a F*ck",
-    genre: "Self-Help",
-    price: 399,
-    image:
-      "https://imgv2-1-f.scribdassets.com/img/word_document/322011391/original/532491aef0/1?v=1",
-    quantity: 1,
-  },
-  {
-    id: 3,
-    title: "Ikigai",
-    genre: "Self-Help",
-    price: 299,
-    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTzih2enEwymWHvPbI8O2GR9HBtVl80-lMvWw&s",
-    quantity: 1,
-  },
-];
+import { useCart } from "../context/CartContext";
+import { useNavigate } from "react-router-dom";
 
 function Cart() {
-  const [cartItems, setCartItems] = useState(initialCart);
+  const { cart, isLoading, error, updateQuantity, removeFromCart, fetchCart } = useCart();
+  const navigate = useNavigate();
 
-  const handleIncrease = (id) => {
-    setCartItems((items) =>
-      items.map((item) =>
-        item.id === id
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      )
-    );
+  // Explicitly fetch the cart data every time the Cart page is opened
+  // to guarantee we have the absolute freshest data from the server.
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  const handleIncrease = async (cartItemId, currentQuantity) => {
+    try {
+      await updateQuantity(cartItemId, currentQuantity + 1);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleDecrease = (id) => {
-    setCartItems((items) =>
-      items.map((item) =>
-        item.id === id && item.quantity > 1
-          ? { ...item, quantity: item.quantity - 1 }
-          : item
-      )
-    );
+  const handleDecrease = async (cartItemId, currentQuantity) => {
+    if (currentQuantity <= 1) return;
+    try {
+      await updateQuantity(cartItemId, currentQuantity - 1);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const handleRemove = (id) => {
-    setCartItems((items) => items.filter((item) => item.id !== id));
+  const handleRemove = async (cartItemId) => {
+    try {
+      await removeFromCart(cartItemId);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
-  const totalPrice = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  if (isLoading && !cart) {
+    return <div className="cart-container" style={{display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh'}}>Loading your cart...</div>;
+  }
+
+  if (error && !cart) {
+     return <div className="cart-container"><div style={{color: 'red', padding: '20px', background: '#ffebee', borderRadius: '8px'}}>{error}</div></div>;
+  }
+
+  // The backend might return an array of items directly, or an object with an items array.
+  // We need to handle both cases so it doesn't appear empty unnecessarily.
+  const cartItems = [];
+  if (cart) {
+    if (Array.isArray(cart)) {
+      cartItems.push(...cart);
+    } else if (Array.isArray(cart.cartItems)) {
+      cartItems.push(...cart.cartItems);
+    } else if (Array.isArray(cart.items)) {
+      cartItems.push(...cart.items);
+    }
+  }
+
+  const totalPrice = cartItems.reduce((sum, item) => {
+    const itemPrice = item.bookPrice ?? 0;
+    return sum + itemPrice * item.quantity;
+  }, 0);
 
   return (
     <div className="cart-container">
@@ -70,48 +73,59 @@ function Cart() {
           {cartItems.length === 0 ? (
             <p className="empty-msg">Your cart is empty.</p>
           ) : (
-            cartItems.map((item) => (
-              <div className="cart-item" key={item.id}>
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="cart-img"
-                />
+            cartItems.map((item) => {
+              const title = item.bookTitle || 'Unknown Title';
+              const imageUrl = item.bookImageUrl || "https://m.media-amazon.com/images/I/51AHZGhzZEL._SL500_.jpg";
+              // const category = item.bookCategory?.name || item.category || item.categoryName || item.genre || 'Uncategorized';
+              const price = item.bookPrice ?? 0;
 
-                <div className="cart-info">
-                  <h3 className="cart-title">{item.title}</h3>
-                  <p className="cart-genre">{item.genre}</p>
-                  <p className="cart-price">₹{item.price}</p>
-                </div>
+              return (
+                <div className="cart-item" key={item.id}>
+                  <img
+                    src={imageUrl}
+                    alt={title}
+                    className="cart-img"
+                    style={{objectFit: 'cover'}}
+                  />
 
-                <div className="cart-actions">
-                  <div className="qty-controls">
+                  <div className="cart-info">
+                    <h3 className="cart-title">{title}</h3>
+                    {/* <p className="cart-genre">{category}</p> */}
+                    <p className="cart-price">Rs. {price}</p>
+                  </div>
+
+                  <div className="cart-actions">
+                    <div className="qty-controls">
+                      <button
+                        onClick={() => handleDecrease(item.id, item.quantity)}
+                        className="qty-btn"
+                        disabled={isLoading || item.quantity <= 1}
+                      >
+                        -
+                      </button>
+                      <span className="qty-value">{item.quantity}</span>
+                      <button
+                        onClick={() => handleIncrease(item.id, item.quantity)}
+                        className="qty-btn"
+                        disabled={isLoading}
+                      >
+                        +
+                      </button>
+                    </div>
+                    <p className="item-total" style={{fontWeight: 'bold'}}>
+                      Rs. {price * item.quantity}
+                    </p>
                     <button
-                      onClick={() => handleDecrease(item.id)}
-                      className="qty-btn"
+                      onClick={() => handleRemove(item.id)}
+                      className="remove-btn"
+                      disabled={isLoading}
                     >
-                      -
-                    </button>
-                    <span className="qty-value">{item.quantity}</span>
-                    <button
-                      onClick={() => handleIncrease(item.id)}
-                      className="qty-btn"
-                    >
-                      +
+                      Remove
                     </button>
                   </div>
-                  <p className="item-total">
-                    ₹{item.price * item.quantity}
-                  </p>
-                  <button
-                    onClick={() => handleRemove(item.id)}
-                    className="remove-btn"
-                  >
-                    Remove
-                  </button>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
@@ -123,9 +137,13 @@ function Cart() {
           </div>
           <div className="summary-row">
             <span>Total Amount</span>
-            <span>₹{totalPrice}</span>
+            <span>Rs. {totalPrice}</span>
           </div>
-          <button className="checkout-btn" disabled={cartItems.length === 0}>
+          <button 
+            className="checkout-btn" 
+            disabled={cartItems.length === 0 || isLoading}
+            onClick={() => navigate('/checkout/cart')}
+          >
             Proceed to Checkout
           </button>
         </div>

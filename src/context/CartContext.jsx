@@ -22,8 +22,10 @@ export const CartProvider = ({ children }) => {
     setError(null);
     try {
       const response = await api.get('/cart');
-      setCart(response.data.data);
+      console.log('Cart fetch response:', response.data);
+      setCart(response.data.data !== undefined ? response.data.data : response.data);
     } catch (err) {
+      console.error('Cart fetch error:', err);
       setError(err.response?.data?.message || 'Failed to fetch cart');
     } finally {
       setIsLoading(false);
@@ -39,7 +41,9 @@ export const CartProvider = ({ children }) => {
     setError(null);
     try {
       const response = await api.post('/cart', { bookId, quantity });
-      setCart(response.data.data);
+      // The backend might not return the full cart in the format we need. 
+      // Safest approach is to re-fetch the full cart.
+      await fetchCart();
       return response.data;
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to add item to cart';
@@ -54,8 +58,9 @@ export const CartProvider = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await api.put(`/cart/${cartItemId}`, { quantity });
-      setCart(response.data.data);
+      const response = await api.put(`/cart/${cartItemId}?quantity=${quantity}`);
+      // Re-fetch the full cart to ensure state exactness
+      await fetchCart();
       return response.data;
     } catch (err) {
       const errorMessage = err.response?.data?.message || 'Failed to update quantity';

@@ -1,168 +1,210 @@
-import React, { useState } from "react"
-import { useParams } from 'react-router-dom'
+import React, { useState, useEffect } from "react"
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import '../styles/Checkout.css'
+import api from '../api/api'
+import { useCart } from '../context/CartContext'
 
 const Checkout = () => {
 
-  const { id } = useParams()  // to get ID from URL
+  const { id } = useParams()  // 'cart' for cart checkout, or book ID for direct checkout
+  const location = useLocation()
+  const navigate = useNavigate()
+  const { cart, clearCart } = useCart()
+
+  const queryParams = new URLSearchParams(location.search)
+  const quantity = parseInt(queryParams.get('quantity')) || 1
 
   const [shipping, setShipping] = useState("free")
+  const [formData, setFormData] = useState({
+    address: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    phone: '',
+    country: 'India'
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState(null)
 
-  const subtotal = 2199
+  const [checkoutItems, setCheckoutItems] = useState([])
+  const [subtotal, setSubtotal] = useState(0)
+
+  useEffect(() => {
+    const fetchDirectBook = async (bookId) => {
+      try {
+        const response = await api.get(`/books/${bookId}`)
+        const book = response.data.data
+        const price = book.price || 0
+        setCheckoutItems([{
+           id: book.id,
+           title: book.title,
+           author: book.author,
+           imageUrl: book.imageUrl,
+           price: price,
+           quantity: quantity
+        }])
+        setSubtotal(price * quantity)
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to load book details for checkout')
+      }
+    }
+  
+    if (id === 'cart') {
+      console.log(cart)
+       if (cart && cart.length > 0) {
+          const items = cart.map(item => ({
+             id: item.bookId,
+             title: item.bookTitle,
+            //  author: item.bookAuthor,
+             imageUrl: item.bookImageUrl,
+             price: item.bookPrice,
+             quantity: item.quantity
+          }))
+          setCheckoutItems(items)
+          const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+          setSubtotal(total)
+          setError(null)
+       } else {
+         setError('Your cart is empty.')
+       }
+    } else if (id) {
+       fetchDirectBook(id)
+    }
+  }, [id, cart, quantity])
+
   const shippingCost = shipping === "express" ? 500 : 0
-  const taxes = 5
+  const taxes = subtotal * 0.05 // 5% tax flat
   const total = subtotal + shippingCost + taxes
 
+  const handleInputChange = (e) => {
+    setFormData({...formData, [e.target.name]: e.target.value})
+  }
+
+  const handleSubmitOrder = async (e) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setError(null)
+    
+    try {
+       const orderData = {
+          shippingAddress: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}, ${formData.country}`,
+          totalAmount: total,
+          // Backend expects an order to be generated. For a direct purchase, we pass items. For Cart, we just hit a checkout endpoint Usually.
+          // This requires mapping to the backend's OrderRequestDTO.
+          items: checkoutItems.map(item => ({
+             bookId: item.id,
+             quantity: item.quantity,
+             price: item.price
+          }))
+       }
+
+       await api.post('/orders', orderData)
+       
+       if (id === 'cart') {
+          // If we checked out from cart, we might want to clear the cart endpoint or context
+          await api.delete('/cart/clear').catch(() => {}) // Assuming there's a clear endpoint
+          clearCart()
+       }
+
+       alert('Order placed successfully!')
+       navigate('/account/orders')
+
+    } catch (err) {
+       setError(err.response?.data?.message || 'Failed to place order. Please try again.')
+    } finally {
+       setIsSubmitting(false)
+    }
+  }
+
   return (
-    // <div className="checkout-container">
-      
-    //   {/* SHOW ID (optional) */}
-    //   {/* <p className="checkout-id">Order ID: {id}</p> */}
+    <div className="checkout-card">
+      <form onSubmit={handleSubmitOrder} className="checkout-left">
+        <h1 className="checkout-title">Shipping Address</h1>
+        
+        {error && <div style={{color: 'red', padding: '10px', background: '#ffebee', marginBottom: '15px'}}>{error}</div>}
 
-    // </div>
-      <div className="checkout-card">
-
-        {/* LEFT SIDE */}
-        <div className="checkout-left">
-
-          {/* <div className="checkout-breadcrumb">
-            Cart &gt; <span>Shipping</span> &gt; Payment
-          </div> */}
-
-          <h1 className="checkout-title">Shipping Address</h1>
-
-          <div className="checkout-row">
-            <div className="field-group">
-              <label>First Name*</label>
-              <input type="text" placeholder="First name" />
-            </div>
-            <div className="field-group">
-              <label>Last Name*</label>
-              <input type="text" placeholder="Last name" />
-            </div>
-          </div>
-
-          <div className="checkout-row">
-            <div className="field-group">
-              <label>Email*</label>
-              <input type="email" placeholder="name@example.com" />
-            </div>
-            <div className="field-group">
-              <label>Phone number*</label>
-              <input type="text" placeholder="+91 987654xxxx" />
-            </div>
-          </div>
-
-          <div className="checkout-row">
-            <div className="field-group">
-              <label>City*</label>
-              <input type="text" placeholder="City" />
-            </div>
-            <div className="field-group">
-              <label>State*</label>
-              <input type="text" placeholder="State" />
-            </div>
-            <div className="field-group">
-              <label>Zip Code*</label>
-              <input type="text" placeholder="560021" />
-            </div>
-          </div>
-
+        <div className="checkout-row">
           <div className="field-group">
-            <label>Description</label>
-            <textarea rows="3" placeholder="Enter a description / landmark" />
+             <label>Full Address*</label>
+             <input type="text" name="address" required value={formData.address} onChange={handleInputChange} placeholder="123 Main St" />
           </div>
-
-          {/* SHIPPING */}
-          <h2 className="section-heading">Shipping Method</h2>
-
-          <div className="shipping-box">
-
-            <div
-              className={shipping === "free" ? "shipping-option active" : "shipping-option"}
-              onClick={() => setShipping("free")}
-            >
-              <div>
-                <div className="shipping-title">Free Shipping</div>
-                <div className="shipping-sub">5–7 Days</div>
-              </div>
-              <div className="shipping-price">₹0</div>
-            </div>
-
-            <div
-              className={shipping === "express" ? "shipping-option active" : "shipping-option"}
-              onClick={() => setShipping("express")}
-            >
-              <div>
-                <div className="shipping-title">Express Shipping</div>
-                <div className="shipping-sub">1–2 Days</div>
-              </div>
-              <div className="shipping-price">₹500</div>
-            </div>
-
-            <p className="shipping-result">
-              Selected Shipping Cost: <b>₹{shippingCost}</b>
-            </p>
-
+          <div className="field-group">
+            <label>Phone number*</label>
+            <input type="text" name="phone" required value={formData.phone} onChange={handleInputChange} placeholder="+91 987654xxxx" />
           </div>
         </div>
 
-        {/* RIGHT SIDE */}
-        <div className="checkout-right">
+        <div className="checkout-row">
+          <div className="field-group">
+            <label>City*</label>
+            <input type="text" name="city" required value={formData.city} onChange={handleInputChange} placeholder="City" />
+          </div>
+          <div className="field-group">
+            <label>State*</label>
+            <input type="text" name="state" required value={formData.state} onChange={handleInputChange} placeholder="State" />
+          </div>
+          <div className="field-group">
+            <label>Zip Code*</label>
+            <input type="text" name="zipCode" required value={formData.zipCode} onChange={handleInputChange} placeholder="560021" />
+          </div>
+        </div>
 
-          <h2 className="cart-title">Your Cart</h2>
-
-          <div className="cart-item">
-            <img src="/images/Atomic_habit.jpg" />
-            <div className="cart-info">
-              <div className="cart-badge">1</div>
-              <div className="cart-name">Atomic Habits</div>
-              <div className="cart-sub">James Clear</div>
+        <h2 className="section-heading">Shipping Method</h2>
+        <div className="shipping-box">
+          <div className={shipping === "free" ? "shipping-option active" : "shipping-option"} onClick={() => setShipping("free")}>
+            <div>
+              <div className="shipping-title">Standard Shipping</div>
+              <div className="shipping-sub">5–7 Days</div>
             </div>
-            <div className="cart-price">₹999.00</div>
+            <div className="shipping-price">Rs. 0</div>
           </div>
-
-          <div className="cart-item">
-            <img src="/images/The_silent_patient.png" alt="Book 2" />
-            <div className="cart-info">
-              <div className="cart-badge">1</div>
-              <div className="cart-name">The Silent Patient</div>
-              <div className="cart-sub">Alex Michaelides</div>
+          <div className={shipping === "express" ? "shipping-option active" : "shipping-option"} onClick={() => setShipping("express")}>
+            <div>
+              <div className="shipping-title">Express Shipping</div>
+              <div className="shipping-sub">1–2 Days</div>
             </div>
-            <div className="cart-price">₹1200.00</div>
+            <div className="shipping-price">Rs. 500</div>
           </div>
+        </div>
 
-          <div className="discount-row">
-            <input type="text" placeholder="Discount code" />
-            <button type="button">Apply</button>
+        <button type="submit" disabled={isSubmitting || checkoutItems.length === 0} style={{marginTop: '20px', padding: '15px', background: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', width: '100%', fontSize: '16px', fontWeight: 'bold'}}>
+          {isSubmitting ? 'Processing...' : 'Place Order securely'}
+        </button>
+      </form>
+
+      <div className="checkout-right">
+        <h2 className="cart-title">Your Item{checkoutItems.length > 1 ? 's' : ''}</h2>
+        
+        {checkoutItems.map((item, index) => (
+          <div className="cart-item" key={index}>
+            <img src={item.imageUrl || "https://m.media-amazon.com/images/I/51AHZGhzZEL._SL500_.jpg"} alt={item.title} />
+            <div className="cart-info">
+              <div className="cart-badge">{item.quantity}</div>
+              <div className="cart-name">{item.title}</div>
+              <div className="cart-sub">{item.author || "Unknown"}</div>
+            </div>
+            <div className="cart-price">Rs. {item.price * item.quantity}</div>
           </div>
+        ))}
 
-          <div className="summary-row">
-            <span>Subtotal</span>
-            <span>₹{subtotal}</span>
-          </div>
-
-          <div className="summary-row">
-            <span>Shipping</span>
-            <span>₹{shippingCost}</span>
-          </div>
-
-          <div className="summary-row">
-            <span>Estimated taxes</span>
-            <span>₹{taxes}</span>
-          </div>
-
-          <div className="summary-divider" />
-
-          <div className="summary-row summary-total">
-            <span>Total</span>
-            <span>₹{total}</span>
-          </div>
-
-          <button className="pay-btn">Continue to Payment</button>
-
+        <div className="summary-row" style={{marginTop: '20px'}}>
+          <span>Subtotal</span>
+          <span>Rs. {subtotal.toFixed(2)}</span>
+        </div>
+        <div className="summary-row">
+          <span>Shipping</span>
+          <span>Rs. {shippingCost.toFixed(2)}</span>
+        </div>
+        <div className="summary-row border-t-2" style={{borderTop: '1px solid #eee', paddingTop: '10px', marginTop: '10px'}}>
+          <span>Taxes</span>
+          <span>Rs. {taxes.toFixed(2)}</span>
+        </div>
+        <div className="summary-row summary-total border-t-2" style={{borderTop: '2px solid #ccc', paddingTop: '15px', marginTop: '10px', fontWeight: 'bold', fontSize: '1.2rem', color: '#111'}}>
+          <span>Total</span>
+          <span>Rs. {total.toFixed(2)}</span>
         </div>
       </div>
+    </div>
   )
 }
 
