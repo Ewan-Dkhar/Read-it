@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { LayoutDashboard, BookOpen, Tags, Users, LogOut } from 'lucide-react';
 import '../styles/AdminLayout.css';
 
