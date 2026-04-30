@@ -1,9 +1,19 @@
 import React, { useEffect, useState } from "react";
 import "../styles/Product.css";
 import { useNavigate, useParams } from "react-router-dom";
+import api from "../api/api";
+import { useCart } from "../context/CartContext";
 
 const Product = () => {
   const { id } = useParams()
+  const navigate = useNavigate()
+  const { addToCart } = useCart()
+  
+  const [book, setBook] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+
   const [relatedBooks, setRelatedBooks] = useState([
     {
       img: "https://i.pinimg.com/736x/eb/65/17/eb6517718b619d7fb1766c7ccd54376f.jpg",
@@ -37,7 +47,44 @@ const Product = () => {
     },
   ]);
 
-  const navigate = useNavigate()
+  useEffect(() => {
+    const fetchBook = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await api.get(`/books/${id}`);
+        setBook(response.data.data);
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to load book details.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    if (id) fetchBook();
+  }, [id]);
+
+  const handleAddToCart = async () => {
+    try {
+      await addToCart(id, quantity);
+      alert('Added to cart successfully!');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to add to cart');
+    }
+  };
+
+  if (isLoading) {
+    return <div className="product-page" style={{minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>Loading book details...</div>;
+  }
+
+  if (error || !book) {
+    return (
+      <div className="product-page" style={{minHeight: '80vh', padding: '40px'}}>
+        <div style={{background: '#fef2f2', color: '#b91c1c', padding: '20px', borderRadius: '8px', borderLeft: '4px solid #ef4444'}}>
+          {error || 'Book not found.'}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -45,30 +92,38 @@ const Product = () => {
         <section className="main-section">
           <div className="image-box">
             <img
-              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0SupMsyxh84UHuq4Cuo32MClNv0AHylmWzMH91UluruTIMFG1gllqUjrXdYo1-yRRos3X0ckLvro2RGNPCksyMIYDWAJ8JqzBuBCIEQ&s=10"
-              alt="Harry Potter Book"
+              src={book.imageUrl || "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0SupMsyxh84UHuq4Cuo32MClNv0AHylmWzMH91UluruTIMFG1gllqUjrXdYo1-yRRos3X0ckLvro2RGNPCksyMIYDWAJ8JqzBuBCIEQ&s=10"}
+              alt={book.title}
             />
           </div>
 
           <div className="details">
-            <h1>Harry Potter And The Cursed Child</h1>
+            <h1>{book.title}</h1>
             <br />
-            <p className="author">J.K. Rowling</p>
-            <p className="lang">English | Spanish</p>
+            <p className="author">{book.author || 'Unknown Author'}</p>
+            <p className="lang">{book.category?.name || 'Uncategorized'}</p>
 
             <p className="description">
-              Harry Potter and the Cursed Child is a play written by Jack Thorne
-              from an original story by Thorne, J. K. Rowling, and John Tiffany.
-              T he plot occurs nineteen years after the events of Rowling's
-              novel Harry Potter and the Deathly Hallows. It follows Albus
-              Severus Potter, the second son of Harry Potter, who is now Head of
-              the Department of Magical Law Enforcement at the Ministry of
-              Magic.
+              {book.description || 'No description available for this book.'}
             </p>
+            
+            <p style={{fontSize: '1.5rem', fontWeight: 'bold', margin: '20px 0'}}>Rs. {book.price}</p>
+
+            <div style={{marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px'}}>
+               <label htmlFor="quantity">Quantity:</label>
+               <input 
+                  type="number" 
+                  id="quantity" 
+                  value={quantity} 
+                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                  style={{padding: '5px', width: '60px', borderRadius: '4px', border: '1px solid #ccc'}}
+                  min="1"
+               />
+            </div>
 
             <div className="buttons">
-              <button className="btn-solid" onClick={() => {navigate(`/checkout/${id}`)}}>Buy now</button>
-              <button className="btn-outline">Add to Cart</button>
+              <button className="btn-solid" onClick={() => navigate(`/checkout/${id}?quantity=${quantity}`)}>Buy now</button>
+              <button className="btn-outline" onClick={handleAddToCart}>Add to Cart</button>
             </div>
           </div>
         </section>
