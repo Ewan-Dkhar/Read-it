@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/api';
+import { Edit2, Trash2 } from 'lucide-react';
 
 const ManageCategories = () => {
     const [categories, setCategories] = useState([]);
@@ -54,8 +55,12 @@ const ManageCategories = () => {
                             <td>{category.name}</td>
                             <td>{category.description}</td>
                             <td>
-                                <button className="admin-btn edit" onClick={() => navigate(`/admin/categories/edit/${category.id}`)}>Edit</button>
-                                <button className="admin-btn delete" onClick={() => handleDelete(category.id)}>Delete</button>
+                                <button className="admin-btn edit" onClick={() => navigate(`/admin/categories/edit/${category.id}`)}>
+                                    <Edit2 size={16} />
+                                </button>
+                                <button className="admin-btn delete" onClick={() => handleDelete(category.id)}>
+                                    <Trash2 size={16} />
+                                </button>
                             </td>
                         </tr>
                     ))}

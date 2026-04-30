@@ -96,7 +96,7 @@ const Home = () => {
           </button>
         </section>
 
-        <section className="categories-section" style={{marginBottom: '2rem'}}>
+        {/* <section className="categories-section" style={{marginBottom: '2rem'}}>
            <h2 className="header" style={{textAlign: 'center', marginBottom: '1rem'}}>Categories</h2>
            <div style={{display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center'}}>
              {categories.map(cat => (
@@ -112,7 +112,7 @@ const Home = () => {
                 </div>
              ))}
            </div>
-        </section>
+        </section> */}
         
         <section className="popular-books">
           <h1 className="header">Popular Books</h1>

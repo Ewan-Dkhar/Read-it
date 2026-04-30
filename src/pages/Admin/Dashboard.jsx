@@ -1,23 +1,28 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../api/api';
+import { Book, Users, Tags, FileText } from 'lucide-react';
 
 const Dashboard = () => {
-    const [stats, setStats] = useState({ users: 0, books: 0, orders: 0 });
+    const [stats, setStats] = useState({
+        books: 0,
+        users: 0,
+        categories: 0
+    });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                // You can add distinct aggregation endpoints or fetch arrays and length them
-                const [booksRes, ordersRes, usersRes] = await Promise.all([
+                const [booksRes, usersRes, catRes] = await Promise.all([
                     api.get('/books'),
-                    api.get('/orders'),
-                    api.get('/users')
+                    api.get('/users'),
+                    api.get('/categories')
                 ]);
+                
                 setStats({
-                    books: booksRes.data.data?.content?.length || booksRes.data.data?.length || 0,
-                    orders: ordersRes.data.data?.length || 0,
-                    users: usersRes.data.data?.length || 0
+                    books: booksRes.data.data?.totalElements || booksRes.data.data?.length || 0,
+                    users: usersRes.data.data?.totalElements || usersRes.data.data?.length || 0,
+                    categories: catRes.data.data?.length || 0
                 });
             } catch (err) {
                 console.error("Failed to load dashboard stats", err);
@@ -25,6 +30,7 @@ const Dashboard = () => {
                 setLoading(false);
             }
         };
+
         fetchStats();
     }, []);
 
@@ -32,19 +38,45 @@ const Dashboard = () => {
 
     return (
         <div>
-            <h2>Admin Dashboard</h2>
-            <div className="admin-dashboard-cards">
-                <div className="admin-card">
-                    <h3>Total Users</h3>
-                    <p>{stats.users}</p>
+            <div className="admin-page-header">
+                <h2>Overview</h2>
+            </div>
+            <div className="dashboard-grid">
+                <div className="stat-card">
+                    <div className="stat-icon" style={{ backgroundColor: '#4f46e5' }}>
+                        <Book />
+                    </div>
+                    <div className="stat-details">
+                        <h3>Total Books</h3>
+                        <p>{stats.books}</p>
+                    </div>
                 </div>
-                <div className="admin-card">
-                    <h3>Total Books</h3>
-                    <p>{stats.books}</p>
+                <div className="stat-card">
+                    <div className="stat-icon" style={{ backgroundColor: '#10b981' }}>
+                        <Users />
+                    </div>
+                    <div className="stat-details">
+                        <h3>Registered Users</h3>
+                        <p>{stats.users}</p>
+                    </div>
                 </div>
-                <div className="admin-card">
-                    <h3>Total Orders</h3>
-                    <p>{stats.orders}</p>
+                <div className="stat-card">
+                    <div className="stat-icon" style={{ backgroundColor: '#f59e0b' }}>
+                        <Tags />
+                    </div>
+                    <div className="stat-details">
+                        <h3>Categories</h3>
+                        <p>{stats.categories}</p>
+                    </div>
+                </div>
+                <div className="stat-card">
+                    <div className="stat-icon" style={{ backgroundColor: '#ec4899' }}>
+                        <FileText />
+                    </div>
+                    <div className="stat-details">
+                        <h3>System Logs</h3>
+                        <p>12</p>
+                    </div>
                 </div>
             </div>
         </div>
