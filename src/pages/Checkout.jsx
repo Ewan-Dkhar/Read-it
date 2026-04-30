@@ -50,7 +50,6 @@ const Checkout = () => {
     }
   
     if (id === 'cart') {
-      console.log(cart)
        if (cart && cart.length > 0) {
           const items = cart.map(item => ({
              id: item.bookId,
