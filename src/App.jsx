@@ -15,6 +15,8 @@ import AccountLayout from './layouts/AccountLayout'
 import MyOrders from './pages/MyOrders'
 import Checkout from './pages/Checkout'
 import Cart from './pages/Cart'
+import Login from './pages/Login'
+import Register from './pages/Register'
 
 function App() {
 
@@ -24,6 +26,8 @@ function App() {
       <Navbar />
       <Routes>
         <Route path='/' element={<Home />} />
+        <Route path='/login' element={<Login />} />
+        <Route path='/register' element={<Register />} />
         <Route path='/about' element={<About />} />
         <Route path='/contact' element={<Contact />} />
         <Route path='/shop' element={<Shop />} />

@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { useParams } from 'react-router-dom'
-import '../styles/checkout.css'
+import '../styles/Checkout.css'
 
 const Checkout = () => {
 
