@@ -19,10 +19,7 @@ api.interceptors.request.use(
 // Response interceptor to handle 401 Unauthorized
 api.interceptors.response.use(
   (response) => {
-    // Optionally handle generic success wraps if we want to unwrap here, 
-    // but usually it's better to return the full response or response.data.
-    // For now we'll return response, meaning callers do res.data.data
-    return response;
+      return response;
   },
   (error) => {
     if (error.response && error.response.status === 401) {
