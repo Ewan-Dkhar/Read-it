@@ -1,11 +1,19 @@
 import React from 'react';
-import { Outlet, NavLink } from 'react-router-dom';
+import { Outlet, NavLink, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LayoutDashboard, BookOpen, Tags, Users, LogOut } from 'lucide-react';
 import '../styles/AdminLayout.css';
 
 const AdminLayout = () => {
-    const { logout } = useAuth();
+    const { user, isAuthenticated, logout } = useAuth();
+
+    if (!isAuthenticated) {
+        return <Navigate to="/login" replace />;
+    }
+
+    if (user?.role !== 'ADMIN') {
+        return <Navigate to="/" replace />;
+    }
 
     return (
         <div className="admin-container">
