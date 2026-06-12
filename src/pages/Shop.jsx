@@ -79,106 +79,89 @@ const Shop = () => {
     });
   }, [search, selectedGenres, selectedLanguages, maxPrice]);
 
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   return (
     <div className="shop-page">
-      <div className="shop-container">
-        <h1 className="shop-title">Shop Collection</h1>
 
-        <div className="layout">
-          {/* SIDEBAR FILTERS */}
-          <aside className="sidebar">
-            <div className="filter-group">
-              <h3>Genre</h3>
-              <div className="options-stack">
-                {GENRES.map((g) => (
-                  <label key={g} className="option">
-                    <input
-                      type="checkbox"
-                      checked={selectedGenres.includes(g)}
-                      onChange={() => toggleGenre(g)}
-                    />
-                    <span>{g}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
+      <h1 className="shop-title">Shop</h1>
 
-            <div className="filter-group">
-              <h3>Price Range</h3>
-              <div className="price-range-labels">
-                <span>Rs. 200</span>
-                <span>Rs. 900</span>
-              </div>
-
-              <input
-                type="range"
-                min="200"
-                max="900"
-                step="50"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(Number(e.target.value))}
-                className="price-range"
-              />
-
-              <p className="price-value">Up to <strong>Rs. {maxPrice}</strong></p>
-            </div>
-
-            <div className="filter-group">
-              <h3>Language</h3>
-              <div className="options-stack">
-                {LANGUAGES.map((lang) => (
-                  <label key={lang} className="option">
-                    <input
-                      type="checkbox"
-                      checked={selectedLanguages.includes(lang)}
-                      onChange={() => toggleLanguage(lang)}
-                    />
-                    <span>{lang}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          </aside>
-
-          {/* PRODUCTS CONTAINER */}
-          <section className="products">
-            {filteredBooks.map((book) => (
-              <div key={book.id} className="book-horizontal-card" onClick={() => navigate(`/product/${book.id}`)}>
-                <div className="cover-wrapper">
-                  <img src={book.cover} alt={book.title} className="book-cover" />
-                </div>
-
-                <div className="book-info">
-                  <div>
-                    <h2 className="book-title">{book.title}</h2>
-                    <p className="book-author">by {book.author}</p>
-                    <p className="book-langs">{book.languages.join("  |  ")}</p>
-                  </div>
-                  
-                  <div className="book-meta-actions">
-                    <div>
-                      <p className="book-price">Rs. {book.price}</p>
-                      <p className="book-delivery">
-                        Free delivery on <span>{book.deliveryDate}</span>
-                      </p>
-                    </div>
-                    <button className="add-btn" onClick={(e) => { e.stopPropagation(); alert('Added to cart!'); }}>
-                      Add to Cart
-                    </button>
-                  </div>
-                </div>
-              </div>
+      {/* MAIN LAYOUT */}
+      <div className="layout">
+        {/* SIDEBAR */}
+        <aside className="sidebar">
+          <div className="filter-group">
+            <h3>Genre</h3>
+            {GENRES.map((g) => (
+              <label key={g} className="option">
+                <input
+                  type="checkbox"
+                  checked={selectedGenres.includes(g)}
+                  onChange={() => toggleGenre(g)}
+                />
+                {g}
+              </label>
             ))}
+          </div>
 
-            {filteredBooks.length === 0 && (
-              <div className="no-results-box">
-                <p className="no-results">No books match your selected filters.</p>
+          <div className="filter-group">
+            <h3>Price</h3>
+            <div className="price-range-labels">
+              <span>Rs. 200</span>
+              <span>Rs. 900</span>
+            </div>
+
+            <input
+              type="range"
+              min="200"
+              max="900"
+              step="50"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(Number(e.target.value))}
+              className="price-range"
+            />
+
+            <p className="price-value">Up to Rs. {maxPrice}</p>
+          </div>
+
+          <div className="filter-group">
+            <h3>Language</h3>
+            {LANGUAGES.map((lang) => (
+              <label key={lang} className="option">
+                <input
+                  type="checkbox"
+                  checked={selectedLanguages.includes(lang)}
+                  onChange={() => toggleLanguage(lang)}
+                />
+                {lang}
+              </label>
+            ))}
+          </div>
+        </aside>
+
+        {/* PRODUCTS */}
+        <section className="products">
+          {filteredBooks.map((book) => (
+            <div key={book.id} className="book-card" onClick={() => {navigate(`/product/${book.id}`)}}>
+              <img src={book.cover} alt={book.title} className="book-cover" />
+
+              <div className="book-info">
+                <h2 className="book-title">{book.title}</h2>
+                <p className="book-author">{book.author}</p>
+                <p className="book-langs">{book.languages.join(" | ")}</p>
+                <p className="book-price">Rs. {book.price}</p>
+                <p className="book-delivery">
+                  Free delivery on <strong>{book.deliveryDate}</strong>
+                </p>
+                <button className="add-btn">Add to Cart</button>
               </div>
-            )}
-          </section>
-        </div>
+            </div>
+          ))}
+
+          {filteredBooks.length === 0 && (
+            <p className="no-results">No books match your filters.</p>
+          )}
+        </section>
       </div>
     </div>
   );
