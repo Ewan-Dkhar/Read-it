@@ -12,19 +12,19 @@ const genresList = [
 
 function Categories() {
     return (
-        <section className="categories">
-            <h1 className="my-2">Genres</h1>
+        <section className="categories-page">
+            <div className="categories-wrapper">
+                <h1 className="categories-title">Browse Genres</h1>
 
-            <div className="container-1">
-                <div className="card-container">
-
+                <div className="genres-grid">
                     {genresList.map((g, i) => (
-                        <div className="card" key={i}>
-                            <img src={g.img} width="280" height="350" />
-                            <div className="overlay">{g.name}</div>
+                        <div className="genre-card" key={i}>
+                            <img src={g.img} alt={g.name} className="genre-img" />
+                            <div className="genre-overlay">
+                                <h3>{g.name}</h3>
+                            </div>
                         </div>
                     ))}
-
                 </div>
             </div>
         </section>
