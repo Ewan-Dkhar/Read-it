@@ -42,7 +42,6 @@ const Home = () => {
           api.get('/books?page=0&size=10')
         ]);
         setCategories(categoriesRes.data.data || []);
-        // Pageable response format often has content inside
         setBooks(booksRes.data.data?.content || booksRes.data.data || []);
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load home page data.');
@@ -54,7 +53,7 @@ const Home = () => {
   }, []);
 
   const handleAddToCart = async (e, bookId) => {
-    e.stopPropagation(); // prevent navigating to product
+    e.stopPropagation();
     try {
       await addToCart(bookId, 1);
       alert('Added to cart!');
@@ -64,13 +63,13 @@ const Home = () => {
   };
 
   if (isLoading) {
-    return <main><div className="flex h-[80vh] items-center justify-center">Loading books...</div></main>;
+    return <main><div style={{ display: 'flex', height: '80vh', alignItems: 'center', justifyContent: 'center', fontSize: '1.1rem', color: '#555' }}>Loading books...</div></main>;
   }
 
   if (error) {
     return (
       <main>
-        <div className="auth-error" style={{maxWidth: '600px', margin: '40px auto'}}>
+        <div className="auth-error" style={{maxWidth: '600px', margin: '40px auto', padding: '16px', background: '#fef2f2', border: '1px solid #fee2e2', color: '#ef4444', borderRadius: '8px', textAlign: 'center'}}>
            {error}
         </div>
       </main>
@@ -95,24 +94,6 @@ const Home = () => {
             &#10095;
           </button>
         </section>
-
-        {/* <section className="categories-section" style={{marginBottom: '2rem'}}>
-           <h2 className="header" style={{textAlign: 'center', marginBottom: '1rem'}}>Categories</h2>
-           <div style={{display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center'}}>
-             {categories.map(cat => (
-                <div 
-                   key={cat.id} 
-                   onClick={() => navigate(`/shop?category=${cat.id}`)}
-                   style={{
-                     padding: '1rem 2rem', background: '#f3f4f6', 
-                     borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold'
-                   }}
-                >
-                  {cat.name}
-                </div>
-             ))}
-           </div>
-        </section> */}
         
         <section className="popular-books">
           <h1 className="header">Popular Books</h1>
@@ -120,35 +101,39 @@ const Home = () => {
           <div className="book-grid">
             {books.map(book => (
               <div className="book-card" key={book.id} onClick={() => navigate(`/product/${book.id}`)}>
-                <img
-                  src={book.imageUrl || "https://emedicodiary.com/images/books/64cc1fc52646aa176937d4ae350e11fa.jpg"}
-                  alt={book.title}
-                />
                 <div>
-                  <h3>{book.title}</h3>
+                  <img
+                    src={book.imageUrl || "https://emedicodiary.com/images/books/64cc1fc52646aa176937d4ae350e11fa.jpg"}
+                    alt={book.title}
+                  />
                   <p className="genre">{book.category?.name || 'Uncategorized'}</p>
+                  <h3>{book.title}</h3>
                   <p className="desc" style={{
                       display: '-webkit-box', WebkitLineClamp: 2, 
                       WebkitBoxOrient: 'vertical', overflow: 'hidden'
                   }}>
                     {book.description || 'No description available.'}
                   </p>
+                </div>
+                
+                <div>
                   <p className="price">Rs. {book.price}</p>
-
-                  <button onClick={(e) => { 
-                    e.stopPropagation(); 
-                    navigate(`/checkout/${book.id}`);
-                  }}>
-                    Buy Now
-                  </button>
-                  <button className="secondary" onClick={(e) => handleAddToCart(e, book.id)}>
-                    Add to Cart
-                  </button>
+                  <div className="book-card-actions">
+                    <button className="primary-btn" onClick={(e) => { 
+                      e.stopPropagation(); 
+                      navigate(`/checkout/${book.id}`);
+                    }}>
+                      Buy Now
+                    </button>
+                    <button className="secondary-btn" onClick={(e) => handleAddToCart(e, book.id)}>
+                      Add to Cart
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
             
-            {books.length === 0 && <p style={{textAlign: 'center', gridColumn: '1 / -1'}}>No books found.</p>}
+            {books.length === 0 && <p style={{textAlign: 'center', gridColumn: '1 / -1', color: '#71717a', padding: '40px 0'}}>No books found.</p>}
           </div>
         </section>
       </div>
